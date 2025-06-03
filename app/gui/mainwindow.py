@@ -39,9 +39,15 @@ def list_ollama_models() -> list[str]:
 
 
 def categorize(models: list[str]) -> dict[str, str]:
-    low  = next((m for m in models if re.search(r"phi|tiny", m)), None) or models[0]
-    mid  = next((m for m in models if re.search(r"8b|13b|mistral", m)), None) or models[min(1, len(models)-1)]
-    high = next((m for m in models if re.search(r"32b|70b|deepseek|34b", m)), None) or models[-1]
+    """Pick light/mid/heavy models based on the size hints in their names."""
+
+    def find(pattern: str, default: str) -> str:
+        return next((m for m in models if re.search(pattern, m, re.I)), default)
+
+    low  = find(r"7b", models[0])
+    mid  = find(r"32b", models[min(1, len(models) - 1)])
+    high = find(r"70b", models[-1])
+
     return {"low": low, "mid": mid, "high": high}
 
 # ────────── диалог настроек ───────────────────────────────────
@@ -104,8 +110,11 @@ class SettingsDialog(QDialog):
 
     def _upd_model(self):
         k = self.model_key
-        name = {"low":"Лёгкая","mid":"Средняя","high":"Максимальная"}[k]
-        self.lblModel.setText(f"<b>{name}</b><br><small>{self.model_map[k]}</small>")
+        name = {"low": "Лёгкая 7b", "mid": "Средняя 32b", "high": "Тяжёлая 70b"}[k]
+        req  = {"low": "RAM ≥8 ГБ", "mid": "RAM ≥32 ГБ", "high": "RAM ≥64 ГБ"}[k]
+        self.lblModel.setText(
+            f"<b>{name}</b> — {req}<br><small>{self.model_map[k]}</small>"
+        )
 
 
 # ────────── главное окно ───────────────────────────────────────
@@ -122,6 +131,17 @@ class MainWindow(QMainWindow):
 
         self._build_ui(); self._apply_theme(); self._hotkey_global()
 
+    def _icon(self, name: str):
+        color = "#ffffff" if self.theme == "dark" else "#000000"
+        return qta.icon(name, color=color)
+
+    def _update_icons(self):
+        rec_name = "fa5s.square" if getattr(self, "_task", None) else "fa5s.microphone-alt"
+        self.actRecord.setIcon(self._icon(rec_name))
+        self.actOpen.setIcon(self._icon("fa5s.folder-open"))
+        self.actSave.setIcon(self._icon("fa5s.save"))
+        self.actSett.setIcon(self._icon("fa5s.cog"))
+
     # UI ---------------------------------------------------------------
     def _build_ui(self):
         self.lblTitle = QLabel("Инструмент для работы с онлайн-встречами",
@@ -130,12 +150,13 @@ class MainWindow(QMainWindow):
         tb = QToolBar(self); tb.setMovable(False); tb.setIconSize(QSize(36,36))
         tb.setToolButtonStyle(Qt.ToolButtonTextUnderIcon); self.addToolBar(tb)
 
-        self.actRecord = QAction(qta.icon("fa5s.microphone-alt"), "Запись", self)
-        self.actOpen   = QAction(qta.icon("fa5s.folder-open"),    "Открыть", self)
-        self.actSave   = QAction(qta.icon("fa5s.save"),           "Сохранить", self)
-        self.actSett   = QAction(qta.icon("fa5s.cog"),            "Параметры", self)
+        self.actRecord = QAction(self._icon("fa5s.microphone-alt"), "Запись", self)
+        self.actOpen   = QAction(self._icon("fa5s.folder-open"),    "Открыть", self)
+        self.actSave   = QAction(self._icon("fa5s.save"),           "Сохранить", self)
+        self.actSett   = QAction(self._icon("fa5s.cog"),            "Параметры", self)
         tb.addActions([self.actRecord, self.actOpen, self.actSave]); self.actSave.setEnabled(False)
         tb.addSeparator(); tb.addAction(self.actSett)
+        self._update_icons()
 
         splitter = QSplitter(Qt.Horizontal, self)
         self.txtTr = QPlainTextEdit(readOnly=True); self.txtSm = QPlainTextEdit(readOnly=True)
@@ -168,7 +189,7 @@ class MainWindow(QMainWindow):
         col=QWidget();lay=QVBoxLayout(col);lay.addWidget(lbl);lay.addWidget(w);lay.setStretch(1,1);return col
 
     def _cfg_txt(self)->str:
-        m={"low":"Лёгкая","mid":"Средняя","high":"Максимальная"}[self.model_key]
+        m={"low":"Лёгкая 7b","mid":"Средняя 32b","high":"Тяжёлая 70b"}[self.model_key]
         s={"bullet":"список","letter":"письмо","protocol":"протокол"}[self.summary_style]
         t={"light":"светлая","dark":"тёмная"}[self.theme]
         return f"Модель: {m} | Формат: {s} | Тема: {t}"
@@ -187,6 +208,7 @@ class MainWindow(QMainWindow):
 
         qss = THEMES[self.theme]
         QApplication.instance().setStyleSheet(qss.read_text(encoding="utf-8"))
+        self._update_icons()
 
     def _hotkey_global(self):
         keyboard.add_hotkey("ctrl+alt+shift+r",
@@ -206,7 +228,7 @@ class MainWindow(QMainWindow):
     async def _rec_toggle(self):
         if getattr(self,"_task",None) is None:
             self._reset(); self.stop_evt=asyncio.Event(); self._pcm_chunks.clear()
-            self._stage("Запись…",True); self.actRecord.setIcon(qta.icon("fa5s.square")); self.actRecord.setText("Стоп")
+            self._stage("Запись…",True); self.actRecord.setIcon(self._icon("fa5s.square")); self.actRecord.setText("Стоп")
             self._timer_live.start(); self._task=asyncio.create_task(self._loop_record())
         else:
             self.stop_evt.set(); self.actRecord.setEnabled(False); self._timer_live.stop()
@@ -219,7 +241,7 @@ class MainWindow(QMainWindow):
             await self._process_pcm(b"".join(self._pcm_chunks))
         except Exception as e: QMessageBox.critical(self,"Ошибка",str(e))
         finally:
-            self._stage("Готово",False); self.actRecord.setIcon(qta.icon("fa5s.microphone-alt")); self.actRecord.setText("Запись")
+            self._stage("Готово",False); self.actRecord.setIcon(self._icon("fa5s.microphone-alt")); self.actRecord.setText("Запись")
             self.actRecord.setEnabled(True); self._task=None
 
     def _flush_live(self):
