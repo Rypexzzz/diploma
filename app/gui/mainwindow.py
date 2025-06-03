@@ -6,13 +6,13 @@ import keyboard
 import qtawesome as qta
 import qdarktheme
 from qasync import asyncSlot
-from PySide6.QtCore    import Qt, QSize, QTimer
+from PySide6.QtCore    import Qt, QSize, QTimer, QPropertyAnimation
 from PySide6.QtGui     import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QDialog, QDialogButtonBox, QFormLayout,
     QLabel, QMainWindow, QMessageBox, QPlainTextEdit, QProgressBar,
     QRadioButton, QSlider, QSplitter, QStatusBar, QToolBar,
-    QVBoxLayout, QWidget, QSizePolicy
+    QVBoxLayout, QWidget, QSizePolicy, QButtonGroup, QGraphicsOpacityEffect
 )
 
 from ..workflows import recorder, summarizer
@@ -20,10 +20,8 @@ from ..workflows import recorder, summarizer
 # ────────── QSS-файлы ──────────────────────────────────────────
 _QSS_DIR = Path(__file__).parent
 THEMES = {
-    "warm":     _QSS_DIR / "style_light.qss",
-    "graphite": _QSS_DIR / "style_graphite.qss",
-    "system":   None,
-    "modern":   "dark",
+    "light": _QSS_DIR / "style_light.qss",
+    "dark":  "dark",  # qdarktheme built-in
 }
 
 # ────────── helpers ───────────────────────────────────────────
@@ -63,26 +61,30 @@ class SettingsDialog(QDialog):
         self.rbBullet   = QRadioButton("Маркированный список\n• кратко о решениях")
         self.rbLetter   = QRadioButton("Письмо-резюме\nкороткий абзац для почты")
         self.rbProtocol = QRadioButton("Подробный протокол\nвопрос, решение, ответственный")
-        {"bullet":self.rbBullet,"letter":self.rbLetter,"protocol":self.rbProtocol}[cur_style].setChecked(True)
 
-        self.rbWarm     = QRadioButton("Тёплая светлая")
-        self.rbGraphite = QRadioButton("Графитовая тёмная")
-        self.rbSystem   = QRadioButton("Системная (Fusion)")
-        self.rbModern   = QRadioButton("Современная тёмная")
-        {
-            "warm": self.rbWarm,
-            "graphite": self.rbGraphite,
-            "system": self.rbSystem,
-            "modern": self.rbModern,
-        }[cur_theme].setChecked(True)
+        self.rbLight = QRadioButton("Светлая тема")
+        self.rbDark  = QRadioButton("Тёмная тема")
+
+        {"bullet": self.rbBullet, "letter": self.rbLetter, "protocol": self.rbProtocol}[cur_style].setChecked(True)
+        {"light": self.rbLight, "dark": self.rbDark}[cur_theme].setChecked(True)
+
+        # отдельные группы радиокнопок
+        self.grpStyle = QButtonGroup(self)
+        self.grpStyle.addButton(self.rbBullet)
+        self.grpStyle.addButton(self.rbLetter)
+        self.grpStyle.addButton(self.rbProtocol)
+
+        self.grpTheme = QButtonGroup(self)
+        self.grpTheme.addButton(self.rbLight)
+        self.grpTheme.addButton(self.rbDark)
 
         form = QFormLayout()
         form.addRow("Модель суммирования:", self.sld)
         form.addRow("", self.lblModel)
         form.addRow("Формат резюме:", self.rbBullet)
         form.addRow("", self.rbLetter); form.addRow("", self.rbProtocol)
-        form.addRow("Тема оформления:", self.rbWarm)
-        form.addRow("", self.rbGraphite); form.addRow("", self.rbSystem); form.addRow("", self.rbModern)
+        form.addRow("Тема оформления:", self.rbLight)
+        form.addRow("", self.rbDark)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept); buttons.rejected.connect(self.reject)
@@ -99,13 +101,7 @@ class SettingsDialog(QDialog):
                                "letter" if self.rbLetter.isChecked() else "protocol"
     @property
     def theme(self) -> str:
-        if self.rbWarm.isChecked():
-            return "warm"
-        if self.rbGraphite.isChecked():
-            return "graphite"
-        if self.rbModern.isChecked():
-            return "modern"
-        return "system"
+        return "dark" if self.rbDark.isChecked() else "light"
 
     def _upd_model(self):
         k = self.model_key
@@ -120,7 +116,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Оптимизатор онлайн-встреч"); self.resize(1360, 820)
 
         self._model_map = categorize(list_ollama_models())
-        self.model_key = "mid"; self.summary_style = "bullet"; self.theme = "modern"
+        self.model_key = "mid"; self.summary_style = "bullet"; self.theme = "dark"
 
         self._pcm_chunks: list[bytes] = []
         self._timer_live = QTimer(interval=2000); self._timer_live.timeout.connect(self._flush_live)
@@ -175,19 +171,26 @@ class MainWindow(QMainWindow):
     def _cfg_txt(self)->str:
         m={"low":"Лёгкая","mid":"Средняя","high":"Максимальная"}[self.model_key]
         s={"bullet":"список","letter":"письмо","protocol":"протокол"}[self.summary_style]
-        t={
-            "warm": "тёплая",
-            "graphite": "графит",
-            "modern": "современная",
-            "system": "системная",
-        }[self.theme]
+        t={"light":"светлая","dark":"тёмная"}[self.theme]
         return f"Модель: {m} | Формат: {s} | Тема: {t}"
 
     def _apply_theme(self):
+        # лёгкая анимация плавного переключения темы
+        root = self.centralWidget()
+        effect = QGraphicsOpacityEffect(root)
+        root.setGraphicsEffect(effect)
+        anim = QPropertyAnimation(effect, b"opacity", self)
+        anim.setDuration(300)
+        anim.setStartValue(0)
+        anim.setEndValue(1)
+        anim.finished.connect(lambda: root.setGraphicsEffect(None))
+        anim.start(QPropertyAnimation.DeleteWhenStopped)
+
         theme = self.theme
-        if theme == "modern":
+        if theme == "dark":
             qdarktheme.setup_theme("dark")
         else:
+            qdarktheme.setup_theme("light")
             qss = THEMES[theme]
             QApplication.instance().setStyleSheet(
                 "" if qss is None else qss.read_text(encoding="utf-8")
