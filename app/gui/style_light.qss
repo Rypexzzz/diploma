@@ -1,42 +1,42 @@
-QMainWindow { background:#faf3e0; }
+QMainWindow { background:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #fcf4e9, stop:1 #f7e8d0); }
 
 /* тулбар и кнопки -------------------------------------------------------*/
 QToolBar {
     background:#ffffff;
-    spacing:24px;
-    padding:10px 20px;
+    spacing:16px;
+    padding:8px 16px;
     border:none;
 }
 QToolButton {
-    background:#ffd7b3;
+    background:#ffcc99;
     border:none;
-    border-radius:10px;
-    padding:10px;
+    border-radius:8px;
+    padding:8px;
     color:#4a3f35;
-    width:90px; height:90px;
+    width:80px; height:80px;
     font:11pt 'Segoe UI';
 }
-QToolButton:hover   { background:#ffcc99; }
-QToolButton:pressed { background:#ffbf80; }
+QToolButton:hover   { background:#ffb366; }
+QToolButton:pressed { background:#ffa64d; }
 
 /* заголовки -------------------------------------------------------------*/
-#Title       { font:700 22px 'Segoe UI'; color:#564e46; margin-bottom:6px; }
-#Header      { font:600 12pt 'Segoe UI'; color:#6d6257; }
+#Title       { font:700 24px 'Segoe UI'; color:#5a5047; margin-bottom:6px; }
+#Header      { font:600 13px 'Segoe UI'; color:#6d6257; }
 #StageLabel  { font:700 18px 'Segoe UI'; color:#ff8c1a; }
 
 /* текстовые поля --------------------------------------------------------*/
 QPlainTextEdit {
-    background:#fffdf8;
+    background:#fffaf3;
     color:#3e3a35;
     border:1px solid #e0d8cf;
-    border-radius:8px;
+    border-radius:10px;
     padding:6px;
     font:12pt 'Consolas';
 }
 
 /* прогресс-бар ----------------------------------------------------------*/
 QProgressBar {
-    background:#f1ebe4;
+    background:#f2e7d7;
     border:1px solid #d8cfc5;
     border-radius:6px;
     min-width:260px;

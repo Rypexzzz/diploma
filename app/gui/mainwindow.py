@@ -5,13 +5,13 @@ from pathlib import Path
 import keyboard
 import qtawesome as qta
 from qasync import asyncSlot
-from PySide6.QtCore    import Qt, QSize, QTimer
-from PySide6.QtGui     import QAction, QKeySequence
+from PySide6.QtCore    import Qt, QSize, QTimer, QPropertyAnimation
+from PySide6.QtGui     import QAction, QKeySequence, QGraphicsOpacityEffect
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QDialog, QDialogButtonBox, QFormLayout,
     QLabel, QMainWindow, QMessageBox, QPlainTextEdit, QProgressBar,
     QRadioButton, QSlider, QSplitter, QStatusBar, QToolBar,
-    QVBoxLayout, QWidget, QSizePolicy
+    QVBoxLayout, QWidget, QSizePolicy, QButtonGroup
 )
 
 from ..workflows import recorder, summarizer
@@ -66,7 +66,20 @@ class SettingsDialog(QDialog):
         self.rbWarm     = QRadioButton("Тёплая светлая")
         self.rbGraphite = QRadioButton("Графитовая тёмная")
         self.rbSystem   = QRadioButton("Системная (Fusion)")
-        {"warm":self.rbWarm,"graphite":self.rbGraphite,"system":self.rbSystem}[cur_theme].setChecked(True)
+        {
+            "warm": self.rbWarm,
+            "graphite": self.rbGraphite,
+            "system": self.rbSystem,
+        }[cur_theme].setChecked(True)
+
+        self.grpStyle = QButtonGroup(self)
+        self.grpStyle.addButton(self.rbBullet)
+        self.grpStyle.addButton(self.rbLetter)
+        self.grpStyle.addButton(self.rbProtocol)
+        self.grpTheme = QButtonGroup(self)
+        self.grpTheme.addButton(self.rbWarm)
+        self.grpTheme.addButton(self.rbGraphite)
+        self.grpTheme.addButton(self.rbSystem)
 
         form = QFormLayout()
         form.addRow("Модель суммирования:", self.sld)
@@ -90,8 +103,12 @@ class SettingsDialog(QDialog):
     def style(self) -> str: return "bullet" if self.rbBullet.isChecked() else \
                                "letter" if self.rbLetter.isChecked() else "protocol"
     @property
-    def theme(self) -> str: return "warm" if self.rbWarm.isChecked() else \
-                             "graphite" if self.rbGraphite.isChecked() else "system"
+    def theme(self) -> str:
+        if self.rbWarm.isChecked():
+            return "warm"
+        if self.rbGraphite.isChecked():
+            return "graphite"
+        return "system"
 
     def _upd_model(self):
         k = self.model_key
@@ -161,12 +178,18 @@ class MainWindow(QMainWindow):
     def _cfg_txt(self)->str:
         m={"low":"Лёгкая","mid":"Средняя","high":"Максимальная"}[self.model_key]
         s={"bullet":"список","letter":"письмо","protocol":"протокол"}[self.summary_style]
-        t={"warm":"тёплая","graphite":"графит","system":"системная"}[self.theme]
+        t={
+            "warm": "тёплая",
+            "graphite": "графит",
+            "system": "системная",
+        }[self.theme]
         return f"Модель: {m} | Формат: {s} | Тема: {t}"
 
     def _apply_theme(self):
-        qss=THEMES[self.theme]
-        QApplication.instance().setStyleSheet("" if qss is None else qss.read_text(encoding="utf-8"))
+        qss = THEMES[self.theme]
+        QApplication.instance().setStyleSheet(
+            "" if qss is None else qss.read_text(encoding="utf-8")
+        )
 
     def _hotkey_global(self):
         keyboard.add_hotkey("ctrl+alt+shift+r",
@@ -236,5 +259,16 @@ class MainWindow(QMainWindow):
             self._last_md=md; self.actSave.setEnabled(True)
 
     # утилиты
-    def _stage(self,t,busy): self.lblStage.setText(t); self.pbar.setVisible(busy)
+    def _stage(self, t, busy):
+        self.lblStage.setText(t)
+        self.pbar.setVisible(busy)
+        eff = self.lblStage.graphicsEffect()
+        if not isinstance(eff, QGraphicsOpacityEffect):
+            eff = QGraphicsOpacityEffect(self.lblStage)
+            self.lblStage.setGraphicsEffect(eff)
+        anim = QPropertyAnimation(eff, b"opacity", self)
+        anim.setDuration(500)
+        anim.setStartValue(0)
+        anim.setEndValue(1)
+        anim.start(QPropertyAnimation.DeleteWhenStopped)
     def _reset(self): self.txtTr.clear(); self.txtSm.clear(); self.actSave.setEnabled(False)

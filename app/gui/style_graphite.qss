@@ -1,18 +1,18 @@
 /* мягкий графит #383838 + акцент #ff9f40 */
-QMainWindow        { background:#383838; }
+QMainWindow        { background:#2f2f2f; }
 
-QToolBar           { background:#474747; spacing:24px; padding:10px 20px; border:none; }
-QToolButton        { background:#5c5c5c; color:#f0f0f0; border:none; border-radius:10px;
-                     width:90px; height:90px; font:11pt 'Segoe UI'; }
-QToolButton:hover  { background:#6b6b6b; }
-QToolButton:pressed{ background:#7a7a7a; }
+QToolBar           { background:#3a3a3a; spacing:16px; padding:8px 16px; border:none; }
+QToolButton        { background:#555; color:#f0f0f0; border:none; border-radius:8px;
+                     width:80px; height:80px; font:11pt 'Segoe UI'; }
+QToolButton:hover  { background:#666; }
+QToolButton:pressed{ background:#777; }
 
-#Title             { font:700 22px 'Segoe UI'; color:#ffffff; margin-bottom:6px; }
-#Header            { font:600 12pt 'Segoe UI'; color:#dcdcdc; }
+#Title             { font:700 24px 'Segoe UI'; color:#ffffff; margin-bottom:6px; }
+#Header            { font:600 13px 'Segoe UI'; color:#dcdcdc; }
 #StageLabel        { font:700 18px 'Segoe UI'; color:#ffb347; }
 
-QPlainTextEdit     { background:#2e2e2e; color:#e6e6e6; border:1px solid #555;
-                     border-radius:8px; padding:6px; font:12pt 'Consolas'; }
+QPlainTextEdit     { background:#222; color:#e6e6e6; border:1px solid #555;
+                     border-radius:10px; padding:6px; font:12pt 'Consolas'; }
 
-QProgressBar       { background:#444; border:1px solid #666; border-radius:6px; height:16px; }
+QProgressBar       { background:#3c3c3c; border:1px solid #555; border-radius:6px; height:16px; }
 QProgressBar::chunk{ background:#ff9f40; border-radius:6px; }
