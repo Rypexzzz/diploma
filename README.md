@@ -5,3 +5,4 @@
 ```console
 poetry install          # установка зависимостей
 poetry run omeeting     # запуск GUI
+```

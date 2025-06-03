@@ -1,45 +1,44 @@
-QMainWindow { background:#faf3e0; }
+QMainWindow { background:#f0f2f5; }
 
-/* тулбар и кнопки -------------------------------------------------------*/
 QToolBar {
-    background:#ffffff;
-    spacing:24px;
-    padding:10px 20px;
+    background:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #ffffff, stop:1 #e9ecf1);
     border:none;
+    spacing:20px;
+    padding:12px 20px;
 }
 QToolButton {
-    background:#ffd7b3;
+    background:#ffffff;
     border:none;
-    border-radius:10px;
-    padding:10px;
-    color:#4a3f35;
-    width:90px; height:90px;
-    font:11pt 'Segoe UI';
+    border-radius:12px;
+    padding:12px;
+    color:#222222;
+    min-width:72px;
+    font:12pt 'Segoe UI';
 }
-QToolButton:hover   { background:#ffcc99; }
-QToolButton:pressed { background:#ffbf80; }
+QToolButton:hover   { background:#f0f0f0; }
+QToolButton:pressed { background:#e0e0e0; }
 
-/* заголовки -------------------------------------------------------------*/
-#Title       { font:700 22px 'Segoe UI'; color:#564e46; margin-bottom:6px; }
-#Header      { font:600 12pt 'Segoe UI'; color:#6d6257; }
-#StageLabel  { font:700 18px 'Segoe UI'; color:#ff8c1a; }
+#Title      { font:700 24px 'Segoe UI'; color:#333333; margin-bottom:8px; }
+#Header     { font:600 13pt 'Segoe UI'; color:#555555; }
+#StageLabel { font:700 19px 'Segoe UI'; color:#4a90e2; }
 
-/* текстовые поля --------------------------------------------------------*/
 QPlainTextEdit {
-    background:#fffdf8;
-    color:#3e3a35;
-    border:1px solid #e0d8cf;
-    border-radius:8px;
-    padding:6px;
+    background:#ffffff;
+    color:#1c1c1c;
+    border:1px solid #cdd0d5;
+    border-radius:10px;
+    padding:8px;
     font:12pt 'Consolas';
 }
 
-/* прогресс-бар ----------------------------------------------------------*/
 QProgressBar {
-    background:#f1ebe4;
-    border:1px solid #d8cfc5;
-    border-radius:6px;
+    background:#e9ecf1;
+    border:1px solid #c0c4c9;
+    border-radius:8px;
     min-width:260px;
-    height:16px;
+    height:18px;
 }
-QProgressBar::chunk { background:#ffa64d; border-radius:6px; }
+QProgressBar::chunk {
+    background:#4a90e2;
+    border-radius:8px;
+}
