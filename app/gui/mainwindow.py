@@ -4,7 +4,6 @@ from pathlib import Path
 
 import keyboard
 import qtawesome as qta
-import qdarktheme
 from qasync import asyncSlot
 from PySide6.QtCore    import Qt, QSize, QTimer, QPropertyAnimation
 from PySide6.QtGui     import QAction, QKeySequence
@@ -21,7 +20,7 @@ from ..workflows import recorder, summarizer
 _QSS_DIR = Path(__file__).parent
 THEMES = {
     "light": _QSS_DIR / "style_light.qss",
-    "dark":  "dark",  # qdarktheme built-in
+    "dark":  _QSS_DIR / "style_dark.qss",
 }
 
 # ────────── helpers ───────────────────────────────────────────
@@ -186,15 +185,8 @@ class MainWindow(QMainWindow):
         anim.finished.connect(lambda: root.setGraphicsEffect(None))
         anim.start(QPropertyAnimation.DeleteWhenStopped)
 
-        theme = self.theme
-        if theme == "dark":
-            qdarktheme.setup_theme("dark")
-        else:
-            qdarktheme.setup_theme("light")
-            qss = THEMES[theme]
-            QApplication.instance().setStyleSheet(
-                "" if qss is None else qss.read_text(encoding="utf-8")
-            )
+        qss = THEMES[self.theme]
+        QApplication.instance().setStyleSheet(qss.read_text(encoding="utf-8"))
 
     def _hotkey_global(self):
         keyboard.add_hotkey("ctrl+alt+shift+r",

@@ -1,0 +1,44 @@
+QMainWindow { background:#242424; }
+
+QToolBar {
+    background:qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #303030, stop:1 #252525);
+    border:none;
+    spacing:20px;
+    padding:12px 20px;
+}
+QToolButton {
+    background:#2f2f2f;
+    border:none;
+    border-radius:12px;
+    padding:12px;
+    color:#eeeeee;
+    min-width:72px;
+    font:12pt 'Segoe UI';
+}
+QToolButton:hover   { background:#3c3c3c; }
+QToolButton:pressed { background:#464646; }
+
+#Title      { font:700 24px 'Segoe UI'; color:#ffffff; margin-bottom:8px; }
+#Header     { font:600 13pt 'Segoe UI'; color:#cfcfcf; }
+#StageLabel { font:700 19px 'Segoe UI'; color:#4a90e2; }
+
+QPlainTextEdit {
+    background:#1e1e1e;
+    color:#f0f0f0;
+    border:1px solid #444444;
+    border-radius:10px;
+    padding:8px;
+    font:12pt 'Consolas';
+}
+
+QProgressBar {
+    background:#2d2d2d;
+    border:1px solid #555555;
+    border-radius:8px;
+    min-width:260px;
+    height:18px;
+}
+QProgressBar::chunk {
+    background:#4a90e2;
+    border-radius:8px;
+}
