@@ -4,6 +4,7 @@ from pathlib import Path
 
 import keyboard
 import qtawesome as qta
+import qdarktheme
 from qasync import asyncSlot
 from PySide6.QtCore    import Qt, QSize, QTimer
 from PySide6.QtGui     import QAction, QKeySequence
@@ -22,6 +23,7 @@ THEMES = {
     "warm":     _QSS_DIR / "style_light.qss",
     "graphite": _QSS_DIR / "style_graphite.qss",
     "system":   None,
+    "modern":   "dark",
 }
 
 # ────────── helpers ───────────────────────────────────────────
@@ -66,7 +68,13 @@ class SettingsDialog(QDialog):
         self.rbWarm     = QRadioButton("Тёплая светлая")
         self.rbGraphite = QRadioButton("Графитовая тёмная")
         self.rbSystem   = QRadioButton("Системная (Fusion)")
-        {"warm":self.rbWarm,"graphite":self.rbGraphite,"system":self.rbSystem}[cur_theme].setChecked(True)
+        self.rbModern   = QRadioButton("Современная тёмная")
+        {
+            "warm": self.rbWarm,
+            "graphite": self.rbGraphite,
+            "system": self.rbSystem,
+            "modern": self.rbModern,
+        }[cur_theme].setChecked(True)
 
         form = QFormLayout()
         form.addRow("Модель суммирования:", self.sld)
@@ -74,7 +82,7 @@ class SettingsDialog(QDialog):
         form.addRow("Формат резюме:", self.rbBullet)
         form.addRow("", self.rbLetter); form.addRow("", self.rbProtocol)
         form.addRow("Тема оформления:", self.rbWarm)
-        form.addRow("", self.rbGraphite); form.addRow("", self.rbSystem)
+        form.addRow("", self.rbGraphite); form.addRow("", self.rbSystem); form.addRow("", self.rbModern)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept); buttons.rejected.connect(self.reject)
@@ -90,8 +98,14 @@ class SettingsDialog(QDialog):
     def style(self) -> str: return "bullet" if self.rbBullet.isChecked() else \
                                "letter" if self.rbLetter.isChecked() else "protocol"
     @property
-    def theme(self) -> str: return "warm" if self.rbWarm.isChecked() else \
-                             "graphite" if self.rbGraphite.isChecked() else "system"
+    def theme(self) -> str:
+        if self.rbWarm.isChecked():
+            return "warm"
+        if self.rbGraphite.isChecked():
+            return "graphite"
+        if self.rbModern.isChecked():
+            return "modern"
+        return "system"
 
     def _upd_model(self):
         k = self.model_key
@@ -106,7 +120,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Оптимизатор онлайн-встреч"); self.resize(1360, 820)
 
         self._model_map = categorize(list_ollama_models())
-        self.model_key = "mid"; self.summary_style = "bullet"; self.theme = "warm"
+        self.model_key = "mid"; self.summary_style = "bullet"; self.theme = "modern"
 
         self._pcm_chunks: list[bytes] = []
         self._timer_live = QTimer(interval=2000); self._timer_live.timeout.connect(self._flush_live)
@@ -161,12 +175,23 @@ class MainWindow(QMainWindow):
     def _cfg_txt(self)->str:
         m={"low":"Лёгкая","mid":"Средняя","high":"Максимальная"}[self.model_key]
         s={"bullet":"список","letter":"письмо","protocol":"протокол"}[self.summary_style]
-        t={"warm":"тёплая","graphite":"графит","system":"системная"}[self.theme]
+        t={
+            "warm": "тёплая",
+            "graphite": "графит",
+            "modern": "современная",
+            "system": "системная",
+        }[self.theme]
         return f"Модель: {m} | Формат: {s} | Тема: {t}"
 
     def _apply_theme(self):
-        qss=THEMES[self.theme]
-        QApplication.instance().setStyleSheet("" if qss is None else qss.read_text(encoding="utf-8"))
+        theme = self.theme
+        if theme == "modern":
+            qdarktheme.setup_theme("dark")
+        else:
+            qss = THEMES[theme]
+            QApplication.instance().setStyleSheet(
+                "" if qss is None else qss.read_text(encoding="utf-8")
+            )
 
     def _hotkey_global(self):
         keyboard.add_hotkey("ctrl+alt+shift+r",
