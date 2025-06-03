@@ -1,0 +1,18 @@
+/* мягкий графит #383838 + акцент #ff9f40 */
+QMainWindow        { background:#383838; }
+
+QToolBar           { background:#474747; spacing:24px; padding:10px 20px; border:none; }
+QToolButton        { background:#5c5c5c; color:#f0f0f0; border:none; border-radius:10px;
+                     width:90px; height:90px; font:11pt 'Segoe UI'; }
+QToolButton:hover  { background:#6b6b6b; }
+QToolButton:pressed{ background:#7a7a7a; }
+
+#Title             { font:700 22px 'Segoe UI'; color:#ffffff; margin-bottom:6px; }
+#Header            { font:600 12pt 'Segoe UI'; color:#dcdcdc; }
+#StageLabel        { font:700 18px 'Segoe UI'; color:#ffb347; }
+
+QPlainTextEdit     { background:#2e2e2e; color:#e6e6e6; border:1px solid #555;
+                     border-radius:8px; padding:6px; font:12pt 'Consolas'; }
+
+QProgressBar       { background:#444; border:1px solid #666; border-radius:6px; height:16px; }
+QProgressBar::chunk{ background:#ff9f40; border-radius:6px; }

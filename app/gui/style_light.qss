@@ -1,0 +1,45 @@
+QMainWindow { background:#faf3e0; }
+
+/* тулбар и кнопки -------------------------------------------------------*/
+QToolBar {
+    background:#ffffff;
+    spacing:24px;
+    padding:10px 20px;
+    border:none;
+}
+QToolButton {
+    background:#ffd7b3;
+    border:none;
+    border-radius:10px;
+    padding:10px;
+    color:#4a3f35;
+    width:90px; height:90px;
+    font:11pt 'Segoe UI';
+}
+QToolButton:hover   { background:#ffcc99; }
+QToolButton:pressed { background:#ffbf80; }
+
+/* заголовки -------------------------------------------------------------*/
+#Title       { font:700 22px 'Segoe UI'; color:#564e46; margin-bottom:6px; }
+#Header      { font:600 12pt 'Segoe UI'; color:#6d6257; }
+#StageLabel  { font:700 18px 'Segoe UI'; color:#ff8c1a; }
+
+/* текстовые поля --------------------------------------------------------*/
+QPlainTextEdit {
+    background:#fffdf8;
+    color:#3e3a35;
+    border:1px solid #e0d8cf;
+    border-radius:8px;
+    padding:6px;
+    font:12pt 'Consolas';
+}
+
+/* прогресс-бар ----------------------------------------------------------*/
+QProgressBar {
+    background:#f1ebe4;
+    border:1px solid #d8cfc5;
+    border-radius:6px;
+    min-width:260px;
+    height:16px;
+}
+QProgressBar::chunk { background:#ffa64d; border-radius:6px; }

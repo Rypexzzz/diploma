@@ -1,0 +1,2 @@
+C:\Users\User\PycharmProjects\PythonProject\capture-cli\publish\winloopcap.pdb
+C:\Users\User\PycharmProjects\PythonProject\capture-cli\publish\winloopcap.exe
