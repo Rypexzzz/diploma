@@ -49,6 +49,9 @@ async def summarize(text: str, *, model: str, style: str) -> str:
         except aiohttp.ClientConnectionError as e:
             raise RuntimeError("Ollama не запущен.") from e
 
+    if "error" in data:
+        raise RuntimeError(data["error"])
+
     response = data.get("response") or ""
     response = re.sub(r"<think>.*?</think>", "", response, flags=re.S)
     # заменяем plain-таймкоды на кликабельный вид ▶ 00:12
